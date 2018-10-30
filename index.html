@@ -1,12 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
 </head>
+
 <body>
-  <canvas id="id-canvas" width="500" height="400"></canvas>
+  <canvas id="canvas" style="border: 1px solid #F44336;"></canvas>
 </body>
+<style>
+  html,
+  body {
+    margin: 0;
+  }
+</style>
+<script>
+  class Game {
+    constructor(params) {
+      this.canvas = document.querySelector(params.id)
+      this.ctx = this.canvas.getContext('2d')
+      this.Rjsonurl = params.Rjsonurl
+      this.fno = 0
+      this.init()
+      let self = this
+      //资源加载完回调
+      this.loadAllResource(() => {
+        self.start()
+      })
+    }
+    init() {
+      let w = document.documentElement.clientWidth
+      let h = document.documentElement.clientHeight
+      if (w > 500) w = 500
+      if (h > 400) h = 400
+      this.canvas.width = w
+      this.canvas.height = h
+    }
+    //读取资源
+    loadAllResource(callback) {
+      this.R = {}
+      let self = this
+      let alreadyDoneNumber = 0
+      let xhr = new XMLHttpRequest()
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          let Robj = JSON.parse(xhr.responseText)
+          for (let i = 0; i < Robj.images.length; i++) {
+            self.R[Robj.images[i].name] = new Image()
+            self.R[Robj.images[i].name].src = Robj.images[i].url
+            self.R[Robj.images[i].name].onload = () => {
+              alreadyDoneNumber++
+              self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height)
+              let text = `正在加载资源${alreadyDoneNumber}/${Robj.images.length}请稍后。。。`
+              self.ctx.textAlign = 'center'
+              self.ctx.font = '20px 微软雅黑'
+              self.ctx.fillText(text, self.canvas.width / 2, self.canvas.height / 2)
+              if (alreadyDoneNumber === Robj.images.length) {
+                callback()
+              }
+            }
+          }
+        }
+      }
+      xhr.open('get', this.Rjsonurl, true)
+      xhr.send(null)
+    }
+    start() {
+      let self = this
+      this.bg = new BG()
+      this.track = new Track()
+      this.vehicle = new Vehicle()
+      this.timer = setInterval(() => {
+
+        self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height)
+        self.bg.updata()
+        self.bg.render()
+        self.track.updata()
+        self.track.render()
+        self.vehicle.render()
+        self.fno++
+        self.ctx.font = '16px consolas'
+        self.ctx.textAlign = 'left'
+        self.ctx.fillText(`FNO:${self.fno}`, 10, 20)
+      }, 20)
+    }
+  }
+  //赛道
+  class Track {
+    constructor() {
+      this.image = game.R.track
+      this.x = -this.image.width + game.canvas.width
+      this.y = game.bg.image.height
+      this.speed = 10
+    }
+    render() {
+      game.ctx.drawImage(this.image, this.x, this.y)
+      game.ctx.drawImage(this.image, this.x - this.image.width, this.y)
+    }
+    updata() {
+      this.x += this.speed
+      if (this.x > game.canvas.width) {
+        this.x = -this.image.width + game.canvas.width
+      }
+    }
+  }
+
+  //车
+  class Vehicle {
+    constructor() {
+      this.image = game.R.v1
+      this.lun = game.R.lun
+      this.tx1 = game.R.tx1
+      this.x = 100
+      this.y = 90
+      this.speed = 5
+    }
+    render() {
+      game.ctx.drawImage(this.tx1, this.x+144, this.y)
+      game.ctx.drawImage(this.image, this.x, this.y)
+      game.ctx.drawImage(this.lun, this.x+26, this.y+24)
+      game.ctx.drawImage(this.lun, this.x+144, this.y+22)
+      
+    }
+    updata() {
+      this.x += this.speed
+      if (this.x > game.canvas.width) {
+        this.x = -this.image.width + game.canvas.width
+      }
+    }
+  }
+
+  //背景
+  class BG {
+    constructor() {
+      this.image = game.R.bg
+      this.x = -this.image.width + game.canvas.width
+
+      this.y = 0
+      this.speed = 5
+    }
+    render() {
+      game.ctx.drawImage(this.image, this.x, this.y)
+      game.ctx.drawImage(this.image, this.x - this.image.width, this.y)
+    }
+    updata() {
+      this.x += this.speed
+      if (this.x > game.canvas.width) {
+        this.x = -this.image.width + game.canvas.width
+      }
+    }
+  }
+
+  let game = new Game({
+    id: '#canvas',
+    Rjsonurl: 'R.json'
+  })
+</script>
+
 </html>

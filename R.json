@@ -1,0 +1,24 @@
+{
+  "images": [
+    {
+      "name": "bg",
+      "url": "./img/pk10/bg.jpg"
+    },
+    {
+      "name": "track",
+      "url": "./img/pk10/track.jpg"
+    },
+    {
+      "name": "v1",
+      "url": "./img/pk10/1.png"
+    },
+    {
+      "name": "lun",
+      "url": "./img/pk10/lun.png"
+    },
+    {
+      "name": "tx1",
+      "url": "./img/pk10/tx1.png"
+    }
+  ]
+}
